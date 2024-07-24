@@ -1,95 +1,131 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import Parser from 'rss-parser';
+import { fetchPosts } from '../lib/fetchPosts';
 
-export default function Home() {
+const Home = async () => {
+  let rssPosts = [];
+  let userPosts = [];
+  const parser = new Parser();
+
+  try {
+    // Fetching RSS feed
+    const data = await parser.parseURL('https://techcrunch.com/feed/');
+    rssPosts = data.items.slice(0, 10).map(item => ({
+      title: item.title,
+      link: item.link,
+      date: item.isoDate,
+      name: "TechCrunch",
+    }));
+
+    // Fetching user posts from Airtable
+    userPosts = await fetchPosts();
+  } catch (error) {
+    console.error('Error fetching RSS feed or user posts:', error);
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div>
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between">
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">
+              Latest posts
+            </h1>
+            <p>
+              <Link href="/form">
+                <p className="underline cursor-pointer mt-2">Add a new blog</p>
+              </Link>
+            </p>
+          </div>
         </div>
-      </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-4 sm:px-0">
+            <div className="border-4 rounded-lg">
+              <div className="flex flex-col">
+                <div className="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+                  <div className="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg">
+                    
+                    {/* Sección de TechCrunch */}
+                    <section>
+                      <h2 className="text-2xl font-bold leading-tight text-gray-900">TechCrunch Posts</h2>
+                      <table className="min-w-full mt-4">
+                        <thead>
+                          <tr>
+                            <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                              Post
+                            </th>
+                            <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                              Date
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white">
+                          {rssPosts.map(post => (
+                            <tr key={post.link}>
+                              <td className="px-6 py-4 border-b border-gray-200">
+                                <a href={post.link} className="text-blue-600 hover:text-blue-800">
+                                  {post.title}
+                                </a>
+                              </td>
+                              <td className="px-6 py-4 border-b border-gray-200">
+                                {new Date(post.date).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </section>
+                    
+                    {/* Sección de Blogs de Usuarios */}
+                    <section className="mt-8">
+                      <h2 className="text-2xl font-bold leading-tight text-gray-900">User Blogs</h2>
+                      <table className="min-w-full mt-4">
+                        <thead>
+                          <tr>
+                            <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                              Blog
+                            </th>
+                            <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                              Date
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white">
+                          {userPosts.length > 0 ? (
+                            userPosts.map(post => (
+                              <tr key={post.id}>
+                                <td className="px-6 py-4 border-b border-gray-200">
+                                  <a href={post.blogurl} className="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">
+                                    {post.name}
+                                  </a>
+                                </td>
+                                <td className="px-6 py-4 border-b border-gray-200">
+                                  {post.date ? new Date(post.date).toLocaleDateString() : 'No date available'}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td className="px-6 py-4 border-b border-gray-200" colSpan="2">
+                                No user blogs found
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </section>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
-}
+};
+
+export default Home;

@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "airtable": "^0.12.2",
+    "dotenv": "^16.4.5",
+    "html-entities": "^2.5.2",
+    "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.5"
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "eslint": "^8",
