@@ -1,33 +1,43 @@
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Parser from 'rss-parser';
 import { fetchPosts } from '../lib/fetchPosts';
 import { signIn, signOut, useSession } from 'next-auth/client';
 
-const Home = async () => {
-  let rssPosts = [];
-  let userPosts = [];
-  const parser = new Parser();
+const Home = () => {
+  const [rssPosts, setRssPosts] = useState([]);
+  const [userPosts, setUserPosts] = useState([]);
+  const [session, loading] = useSession();
+  
+  useEffect(() => {
+    const fetchRSSandUserPosts = async () => {
+      const parser = new Parser();
+      try {
+        // Fetching RSS feed
+        const data = await parser.parseURL('https://techcrunch.com/feed/');
+        const rssPostsData = data.items.slice(0, 10).map(item => ({
+          title: item.title,
+          link: item.link,
+          date: item.isoDate,
+          name: "TechCrunch",
+        }));
+        setRssPosts(rssPostsData);
 
-  try {
-    // Fetching RSS feed
-    const data = await parser.parseURL('https://techcrunch.com/feed/');
-    rssPosts = data.items.slice(0, 10).map(item => ({
-      title: item.title,
-      link: item.link,
-      date: item.isoDate,
-      name: "TechCrunch",
-    }));
+        // Fetching user posts from Airtable
+        const userPostsData = await fetchPosts();
+        setUserPosts(userPostsData);
+      } catch (error) {
+        console.error('Error fetching RSS feed or user posts:', error);
+      }
+    };
 
-    // Fetching user posts from Airtable
-    userPosts = await fetchPosts();
-  } catch (error) {
-    console.error('Error fetching RSS feed or user posts:', error);
-  }
+    fetchRSSandUserPosts();
+  }, []);
 
   return (
     <div>
       <header className="bg-white shadow">
-      <form>
+        <form>
           {!session ? (
             <a href="/api/auth/signin/github" id="submit-dream" onClick={(e) => {
               e.preventDefault();
@@ -63,7 +73,7 @@ const Home = async () => {
               <div className="flex flex-col">
                 <div className="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
                   <div className="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg">
-                    
+
                     {/* Sección de TechCrunch */}
                     <section>
                       <h2 className="text-2xl font-bold leading-tight text-gray-900">TechCrunch Posts</h2>
@@ -94,7 +104,7 @@ const Home = async () => {
                         </tbody>
                       </table>
                     </section>
-                    
+
                     {/* Sección de Blogs de Usuarios */}
                     <section className="mt-8">
                       <h2 className="text-2xl font-bold leading-tight text-gray-900">User Blogs</h2>
