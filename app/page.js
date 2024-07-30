@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Parser from 'rss-parser';
 import { fetchPosts } from '../lib/fetchPosts';
+import { signIn, signOut, useSession } from 'next-auth/client';
 
 const Home = async () => {
   let rssPosts = [];
@@ -26,6 +27,22 @@ const Home = async () => {
   return (
     <div>
       <header className="bg-white shadow">
+      <form>
+          {!session ? (
+            <a href="/api/auth/signin/github" id="submit-dream" onClick={(e) => {
+              e.preventDefault();
+              signIn('github');
+            }}>Connect to GitHub</a>
+          ) : (
+            <>
+              <span>Signed in as {session.user.email}</span>
+              <a href="/api/auth/signout" id="submit-dream" onClick={(e) => {
+                e.preventDefault();
+                signOut();
+              }}>Sign out</a>
+            </>
+          )}
+        </form>
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between">
             <h1 className="text-3xl font-bold leading-tight text-gray-900">
