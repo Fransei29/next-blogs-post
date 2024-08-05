@@ -1,20 +1,22 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Parser from 'rss-parser';
 import { fetchPosts } from '../lib/fetchPosts';
-import { signIn, signOut, useSession } from 'next-auth/client';
 
 const Home = () => {
   const [rssPosts, setRssPosts] = useState([]);
   const [userPosts, setUserPosts] = useState([]);
-  const [session, loading] = useSession();
-  
+
   useEffect(() => {
     const fetchRSSandUserPosts = async () => {
       const parser = new Parser();
       try {
-        // Fetching RSS feed
-        const data = await parser.parseURL('https://techcrunch.com/feed/');
+        // Fetching RSS feed using proxy
+        const response = await fetch('/api/proxy');
+        const text = await response.text();
+        const data = await parser.parseString(text);
         const rssPostsData = data.items.slice(0, 10).map(item => ({
           title: item.title,
           link: item.link,
@@ -22,47 +24,30 @@ const Home = () => {
           name: "TechCrunch",
         }));
         setRssPosts(rssPostsData);
-
+  
         // Fetching user posts from Airtable
         const userPostsData = await fetchPosts();
         setUserPosts(userPostsData);
       } catch (error) {
         console.error('Error fetching RSS feed or user posts:', error);
+        setError(error);
       }
     };
-
+  
     fetchRSSandUserPosts();
   }, []);
 
   return (
     <div>
       <header className="bg-white shadow">
-        <form>
-          {!session ? (
-            <a href="/api/auth/signin/github" id="submit-dream" onClick={(e) => {
-              e.preventDefault();
-              signIn('github');
-            }}>Connect to GitHub</a>
-          ) : (
-            <>
-              <span>Signed in as {session.user.email}</span>
-              <a href="/api/auth/signout" id="submit-dream" onClick={(e) => {
-                e.preventDefault();
-                signOut();
-              }}>Sign out</a>
-            </>
-          )}
-        </form>
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between">
             <h1 className="text-3xl font-bold leading-tight text-gray-900">
               Latest posts
             </h1>
-            <p>
-              <Link href="/form">
-                <p className="underline cursor-pointer mt-2">Add a new blog</p>
-              </Link>
-            </p>
+            <Link href="/form">
+              <p className="underline cursor-pointer mt-2">Add a new blog</p>
+            </Link>
           </div>
         </div>
       </header>
@@ -73,7 +58,6 @@ const Home = () => {
               <div className="flex flex-col">
                 <div className="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
                   <div className="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg">
-
                     {/* Sección de TechCrunch */}
                     <section>
                       <h2 className="text-2xl font-bold leading-tight text-gray-900">TechCrunch Posts</h2>
