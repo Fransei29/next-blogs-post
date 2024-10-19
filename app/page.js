@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 'use client';
+=======
+"use client";
+>>>>>>> 91c7d3e3f2f4c7d4927bf816f068a2b8d36ea37f
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -8,13 +12,19 @@ import { fetchPosts } from '../lib/fetchPosts';
 const Home = () => {
   const [rssPosts, setRssPosts] = useState([]);
   const [userPosts, setUserPosts] = useState([]);
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 91c7d3e3f2f4c7d4927bf816f068a2b8d36ea37f
   useEffect(() => {
     const fetchRSSandUserPosts = async () => {
       const parser = new Parser();
       try {
-        // Fetching RSS feed
-        const data = await parser.parseURL('https://techcrunch.com/feed/');
+        // Fetching RSS feed using proxy
+        const response = await fetch('/api/proxy');
+        const text = await response.text();
+        const data = await parser.parseString(text);
         const rssPostsData = data.items.slice(0, 10).map(item => ({
           title: item.title,
           link: item.link,
@@ -22,15 +32,16 @@ const Home = () => {
           name: "TechCrunch",
         }));
         setRssPosts(rssPostsData);
-
+  
         // Fetching user posts from Airtable
         const userPostsData = await fetchPosts();
         setUserPosts(userPostsData);
       } catch (error) {
         console.error('Error fetching RSS feed or user posts:', error);
+        setError(error);
       }
     };
-
+  
     fetchRSSandUserPosts();
   }, []);
 
@@ -42,11 +53,9 @@ const Home = () => {
             <h1 className="text-3xl font-bold leading-tight text-gray-900">
               Latest posts
             </h1>
-            <p>
-              <Link href="/form">
-                <p className="underline cursor-pointer mt-2">Add a new blog</p>
-              </Link>
-            </p>
+            <Link href="/form">
+              <p className="underline cursor-pointer mt-2">Add a new blog</p>
+            </Link>
           </div>
         </div>
       </header>
@@ -57,7 +66,6 @@ const Home = () => {
               <div className="flex flex-col">
                 <div className="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
                   <div className="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg">
-
                     {/* Sección de TechCrunch */}
                     <section>
                       <h2 className="text-2xl font-bold leading-tight text-gray-900">TechCrunch Posts</h2>
