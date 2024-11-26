@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-'use client';
-=======
 "use client";
->>>>>>> 91c7d3e3f2f4c7d4927bf816f068a2b8d36ea37f
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -12,11 +8,7 @@ import { fetchPosts } from '../lib/fetchPosts';
 const Home = () => {
   const [rssPosts, setRssPosts] = useState([]);
   const [userPosts, setUserPosts] = useState([]);
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> 91c7d3e3f2f4c7d4927bf816f068a2b8d36ea37f
   useEffect(() => {
     const fetchRSSandUserPosts = async () => {
       const parser = new Parser();
